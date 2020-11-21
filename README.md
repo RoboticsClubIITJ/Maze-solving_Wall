@@ -11,5 +11,7 @@ This bot has a laser with range -126 to 126 degree
 which takes 1008 samples in one second.
 
 # The Research Paper used:
-This is added for your refernce
+This is added for your refernce for complete knowledge
+of the implementation of the algorithm used.
+
 
