@@ -4,7 +4,8 @@
 import rospy
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
-import statistics
+# import statistics
+
 #from tf import transformations
 #from datetime import datetime
 
@@ -15,18 +16,22 @@ import time
 
 hz = 20                     # Cycle Frequency
 loop_index = 0              # Number of sampling cycles
-loop_index_outer_corner = 0 # Loop index when the outer corner is detected
-loop_index_inner_corner = 0 # Loop index when the inner corner is detected
-inf = 10                     # Limit to Laser sensor range in meters, all distances above this value are 
-                            #      considered out of sensor range
+loop_index_outer_corner = 0  # Loop index when the outer corner is detected
+loop_index_inner_corner = 0  # Loop index when the inner corner is detected
+# Limit to Laser sensor range in meters, all distances above this value are
+inf = 10
+#      considered out of sensor range
 wall_dist = 0.08            # Distance desired from the wall
 max_speed = 0.3             # Maximum speed of the robot on meters/seconds
-p = 15                      # Proportional constant for controller  
-d = 0                       # Derivative constant for controller 
-angle = 1                   # Proportional constant for angle controller (just simple P controller)
-direction = -1              # 1 for wall on the left side of the robot (-1 for the right side)
+p = 15                      # Proportional constant for controller
+d = 0                       # Derivative constant for controller
+# Proportional constant for angle controller (just simple P controller)
+angle = 1
+# 1 for wall on the left side of the robot (-1 for the right side)
+direction = -1
 e = 0                       # Diference between current wall measurements and previous one
-angle_min = 0               # Angle, at which was measured the shortest distance between the robot and a wall
+# Angle, at which was measured the shortest distance between the robot and a wall
+angle_min = 0
 dist_front = 0              # Measured front distance
 diff_e = 0                  # Difference between current error and previous one
 dist_min = 0                # Minimum measured distance
@@ -35,35 +40,40 @@ dist_min = 0                # Minimum measured distance
 last_outer_corner_detection_time = time.time()
 last_change_direction_time = time.time()
 last_inner_corner_detection_time = time.time()
-rotating = 0 
+rotating = 0
 pub_ = None
 # Sensor regions
 regions_ = {
-        'bright': 0,
-        'right': 0,
-        'fright': 0,
-        'front': 0,
-        'left': 0,
+    'bright': 0,
+    'right': 0,
+    'fright': 0,
+    'front': 0,
+    'left': 0,
 }
-last_kinds_of_wall=[0, 0, 0, 0, 0]
+last_kinds_of_wall = [0, 0, 0, 0, 0]
 index = 0
 
-state_outer_inner=[0, 0, 0, 0]
+state_outer_inner = [0, 0, 0, 0]
 index_state_outer_inner = 0
 
 bool_outer_corner = 0
-bool_inner_corner =0
+bool_inner_corner = 0
 
-last_vel = [random.uniform(0.1,0.3),  random.uniform(-0.3,0.3)]
-wall_found =0
+last_vel = [random.uniform(0.1, 0.3),  random.uniform(-0.3, 0.3)]
+wall_found = 0
 
-#Robot state machines
+# Robot state machines
 state_ = 0
 state_dict_ = {
     0: 'random wandering',
     1: 'following wall',
     2: 'rotating'
 }
+
+
+def mean(numbers):
+    return float(sum(numbers)) / max(len(numbers), 1)
+
 
 def clbk_laser(msg):
     """
@@ -75,7 +85,7 @@ def clbk_laser(msg):
     size = len(msg.ranges)
     min_index = int(size*(direction+1)/4)
     max_index = int(size*(direction+3)/4)
-    
+
     # Determine values for PD control of distance and P control of angle
     for i in range(min_index, max_index):
         if msg.ranges[i] < msg.ranges[min_index] and msg.ranges[i] > 0.01:
@@ -88,29 +98,30 @@ def clbk_laser(msg):
 
     # Determination of minimum distances in each region
     regions_ = {
-        'bright':  min(statistics.mean(msg.ranges[0:143]), inf),
-        'right': min(statistics.mean(msg.ranges[144:287]), inf),
-        'fright':  min(statistics.mean(msg.ranges[288:431]), inf),
-        'front':  min(statistics.mean(msg.ranges[432:575]), inf),
-        'fleft':   min(statistics.mean(msg.ranges[576:719]), inf),
-        'left':   min(statistics.mean(msg.ranges[720:863]), inf),
-        'bleft':   min(statistics.mean(msg.ranges[864:1007]), inf),
+        'bright':  min(mean(msg.ranges[0:143]), inf),
+        'right': min(mean(msg.ranges[144:287]), inf),
+        'fright':  min(mean(msg.ranges[288:431]), inf),
+        'front':  min(mean(msg.ranges[432:575]), inf),
+        'fleft':   min(mean(msg.ranges[576:719]), inf),
+        'left':   min(mean(msg.ranges[720:863]), inf),
+        'bleft':   min(mean(msg.ranges[864:1007]), inf),
     }
-    #rospy.loginfo(regions_)
+    # rospy.loginfo(regions_)
 
     # Detection of Outer and Inner corner
     bool_outer_corner = is_outer_corner()
     bool_inner_corner = is_inner_corner()
     if bool_outer_corner == 0 and bool_inner_corner == 0:
-        last_kinds_of_wall[index]=0
-    
+        last_kinds_of_wall[index] = 0
+
     # Indexing for last five pattern detection
     # This is latter used for low pass filtering of the patterns
-    index = index + 1 #5 samples recorded to asses if we are at the corner or not
+    index = index + 1  # 5 samples recorded to asses if we are at the corner or not
     if index == len(last_kinds_of_wall):
         index = 0
-        
+
     take_action()
+
 
 def change_state(state):
     """
@@ -118,8 +129,9 @@ def change_state(state):
     """
     global state_, state_dict_
     if state is not state_:
-        #print 'Wall follower - [%s] - %s' % (state, state_dict_[state])
+        # print 'Wall follower - [%s] - %s' % (state, state_dict_[state])
         state_ = state
+
 
 def take_action():
     """
@@ -129,7 +141,7 @@ def take_action():
             State 2 Pattern sequence reached - Rotating
     """
     global regions_, index, last_kinds_of_wall, index_state_outer_inner, state_outer_inner, loop_index, loop_index_outer_corner
-    
+
     global wall_dist, max_speed, direction, p, d, angle, dist_min, wall_found, rotating, bool_outer_corner, bool_inner_corner
 
     regions = regions_
@@ -155,11 +167,12 @@ def take_action():
     elif (loop_index == loop_index_outer_corner) and (rotate_sequence_V1 == state_outer_inner or rotate_sequence_V2 == state_outer_inner or rotate_sequence_W == state_outer_inner):
         state_description = 'case 2 - rotating'
         change_direction()
-        state_outer_inner = [ 0, 0,  0, 'C']
+        state_outer_inner = [0, 0,  0, 'C']
         change_state(2)
     else:
         state_description = 'case 1 - following wall'
         change_state(1)
+
 
 def random_wandering():
     """
@@ -171,13 +184,15 @@ def random_wandering():
     """
     global direction, last_vel
     msg = Twist()
-    msg.linear.x = max(min( last_vel[0] + random.uniform(-0.01,0.01),0.3),0.1)
-    msg.angular.z= max(min( last_vel[1] + random.uniform(-0.1,0.1),1),-1)
+    msg.linear.x = max(
+        min(last_vel[0] + random.uniform(-0.01, 0.01), 0.3), 0.1)
+    msg.angular.z = max(min(last_vel[1] + random.uniform(-0.1, 0.1), 1), -1)
     if msg.angular.z == 1 or msg.angular.z == -1:
         msg.angular.z = 0
     last_vel[0] = msg.linear.x
     last_vel[1] = msg.angular.z
     return msg
+
 
 def following_wall():
     """
@@ -197,9 +212,11 @@ def following_wall():
         msg.linear.x = 0.4*max_speed
     else:
         msg.linear.x = max_speed
-    msg.angular.z = max(min(direction*(p*e+d*diff_e) + angle*(angle_min-((math.pi)/2)*direction), 2.5), -2.5)
-    #print 'Turn Left angular z, linear x %f - %f' % (msg.angular.z, msg.linear.x)
+    msg.angular.z = max(min(direction*(p*e+d*diff_e) +
+                            angle*(angle_min-((math.pi)/2)*direction), 2.5), -2.5)
+    # print 'Turn Left angular z, linear x %f - %f' % (msg.angular.z, msg.linear.x)
     return msg
+
 
 def change_direction():
     """
@@ -207,11 +224,13 @@ def change_direction():
         1 for wall on the left side of the robot and -1 for the right side
     """
     global direction, last_change_direction, rotating
-    elapsed_time = time.time() - last_change_direction_time # Elapsed time since last change direction
+    # Elapsed time since last change direction
+    elapsed_time = time.time() - last_change_direction_time
     if elapsed_time >= 20:
         last_change_direction = time.time()
-        direction = -direction # Wall in the other side now
+        direction = -direction  # Wall in the other side now
         rotating = 1
+
 
 def rotating():
     """
@@ -241,16 +260,18 @@ def is_outer_corner():
     global regions_, last_kinds_of_wall, last_outer_corner_detection_time, index, state_outer_inner, index_state_outer_inner, loop_index, loop_index_outer_corner
     regions = regions_
     bool_outer_corner = 0
-    if (regions['fright'] == inf and regions['front'] == inf and regions['right'] == inf and regions['bright'] < inf  and regions['left'] == inf and regions['bleft'] == inf and regions['fleft'] == inf) or (regions['bleft'] < inf and regions['fleft'] == inf and regions['front'] == inf and regions['left'] == inf and regions['right'] == inf and regions['bright'] == inf and regions['fright'] == inf):
-        bool_outer_corner = 1 # It is a corner
-        last_kinds_of_wall[index]='C'
-        elapsed_time = time.time() - last_outer_corner_detection_time # Elapsed time since last corner detection
+    if (regions['fright'] == inf and regions['front'] == inf and regions['right'] == inf and regions['bright'] < inf and regions['left'] == inf and regions['bleft'] == inf and regions['fleft'] == inf) or (regions['bleft'] < inf and regions['fleft'] == inf and regions['front'] == inf and regions['left'] == inf and regions['right'] == inf and regions['bright'] == inf and regions['fright'] == inf):
+        bool_outer_corner = 1  # It is a corner
+        last_kinds_of_wall[index] = 'C'
+        # Elapsed time since last corner detection
+        elapsed_time = time.time() - last_outer_corner_detection_time
         if last_kinds_of_wall.count('C') == len(last_kinds_of_wall) and elapsed_time >= 30:
             last_outer_corner_detection_time = time.time()
             loop_index_outer_corner = loop_index
             state_outer_inner = state_outer_inner[1:]
             state_outer_inner.append('C')
     return bool_outer_corner
+
 
 def is_inner_corner():
     """
@@ -267,8 +288,9 @@ def is_inner_corner():
     bool_inner_corner = 0
     if regions['fright'] < wall_dist and regions['front'] < wall_dist and regions['fleft'] < wall_dist:
         bool_inner_corner = 1
-        last_kinds_of_wall[index]='I'
-        elapsed_time = time.time() - last_inner_corner_detection_time # Elapsed time since last corner detection
+        last_kinds_of_wall[index] = 'I'
+        # Elapsed time since last corner detection
+        elapsed_time = time.time() - last_inner_corner_detection_time
         if last_kinds_of_wall.count('I') == len(last_kinds_of_wall) and elapsed_time >= 20:
             last_inner_corner_detection_time = time.time()
             loop_index_inner_corner = loop_index
@@ -277,15 +299,16 @@ def is_inner_corner():
 
     return bool_inner_corner
 
+
 def main():
     global pub_, active_, hz, loop_index
-    
+
     rospy.init_node('try')
-    
+
     pub_ = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    
+
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    
+
     rate = rospy.Rate(hz)
     while not rospy.is_shutdown():
         loop_index = loop_index + 1
@@ -300,10 +323,11 @@ def main():
             msg = rotating()
         else:
             rospy.logerr('Unknown state!')
-        
+
         pub_.publish(msg)
-        
+
         rate.sleep()
+
 
 if __name__ == '__main__':
     main()
