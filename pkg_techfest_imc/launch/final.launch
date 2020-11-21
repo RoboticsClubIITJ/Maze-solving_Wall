@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+  <include file = "$(find pkg_techfest_imc)/launch/gazebo.launch" />
+
+  <!-- <include file = "$(find pkg_techfest_imc)/launch/rviz.launch" /> -->
+  
+  <!--node name="cmd_robot" pkg="pkg_techfest_imc" type="cmd_vel_robot.py"/-->
+  
+  <!--node name="reading_laser" pkg="pkg_techfest_imc" type="node_follow_wall.py"/-->
+  
+  <!--node name="node_maze_runner" pkg="pkg_techfest_imc" type="node_maze_runner.py"/-->
+  
+  <!--node name="obstacle" pkg="pkg_techfest_imc" type="node_obstacle_avoidance.py"/-->
+   
+  <node name="servo_cmd" pkg="pkg_techfest_imc" type="position_controller.py"/>
+  
+  <!--node name="try" pkg="pkg_techfest_imc" type="trial.py"/-->
+  
+  <node name="try" pkg="pkg_techfest_imc" type="trial.py"/>
+
+</launch>
