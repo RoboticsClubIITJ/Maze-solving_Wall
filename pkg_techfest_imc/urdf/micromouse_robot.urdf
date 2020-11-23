@@ -185,8 +185,8 @@
       <updateRate>20</updateRate>
       <leftJoint>joint_left_wheel</leftJoint>
       <rightJoint>joint_right_wheel</rightJoint>
-      <wheelSeparation>${Factor*0.35}</wheelSeparation>
-      <wheelDiameter>${Factor*0.17}</wheelDiameter>
+      <wheelSeparation>${Factor*0.30}</wheelSeparation>
+      <wheelDiameter>${Factor*0.15}</wheelDiameter>
       <torque>0.1</torque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
