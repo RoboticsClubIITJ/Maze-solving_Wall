@@ -27,7 +27,7 @@
   <material name="white">
     <color rgba="1.0 1.0 1.0 1.0"/>
   </material>
-  <xacro:property name="Factor" value="0.7"/>
+
   <gazebo reference="link_chassis">
     <material>Gazebo/Orange</material>
   </gazebo>
@@ -44,29 +44,31 @@
 
     <inertial>
       <mass value="0.5"/>
-      <origin rpy="0  0  0" xyz="0 ${Factor*0.01} 0"/>
+      <origin rpy="0  0  0" xyz="0 0.01 0"/>
       <inertia ixx="0.00022083" ixy="0" ixz="0" iyy="0.00022083" iyz="0" izz="0.00040833"/>
     </inertial>
 
     <collision name="link_chassis_collision">
       <origin rpy="0  0  0" xyz="0     0    -0.005"/>
       <geometry>
-        <box size="${Factor*0.07} ${Factor*0.07} ${Factor*0.02}"/>
+        <box size="0.07 0.07 0.02"/>
       </geometry>
     </collision>
 
     <visual name="link_chassis_visual">
-      <origin rpy="0  0  0" xyz="0     0    ${Factor*-0.005}"/>
+      <origin rpy="0  0  0" xyz="0     0    -0.005"/>
       <geometry>
-        <box size="${Factor*0.06} ${Factor*0.06} ${Factor*0.02}"/>
+        <!-- <box size="0.07 0.07 0.02"/> -->
+        <box size="0.06 0.06 0.02"/>
       </geometry>
     </visual>
 
     <!-- caster front -->
     <collision name="caster_front_collision">
-      <origin rpy="0  0  0" xyz="0     ${Factor*(-0.03)}  ${Factor*(-0.015)}"/>
+      <origin rpy="0  0  0" xyz="0     -0.03  -0.015"/>
       <geometry>
-        <sphere radius="${Factor*0.003}"/>
+        <!-- <sphere radius="0.005"/> -->
+        <sphere radius="0.003"/>
       </geometry>
       <surface>
         <friction>
@@ -81,9 +83,10 @@
     </collision>
 
     <visual name="castor_front_visual">
-      <origin rpy="0  0  0" xyz="0   ${Factor*(-0.01)}  ${Factor*(-0.015)}"/>
+      <origin rpy="0  0  0" xyz="0   -0.03  -0.015"/>
       <geometry>
-        <sphere radius="${Factor*0.005}"/>
+        <!-- <sphere radius="0.005"/> -->
+        <sphere radius="0.003"/>
       </geometry>
     </visual>
   </link>
@@ -100,14 +103,16 @@
     <collision name="link_right_wheel_collision">
       <origin rpy="0 1.5707 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="${Factor*0.007}" radius="${Factor*0.0175}"/>
+        <!-- <cylinder length="0.007" radius="0.02"/> -->
+        <cylinder length="0.007" radius="0.0175"/>
       </geometry>
     </collision>
 
     <visual name="link_right_wheel_visual">
       <origin rpy="0 1.5707 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="${Factor*0.007}" radius="${Factor*0.0175}"/>
+        <!-- <cylinder length="0.007" radius="0.02"/> -->
+        <cylinder length="0.007" radius="0.0175"/>
       </geometry>
     </visual>
 
@@ -115,10 +120,11 @@
 
   <!--   Joint for right wheel  -->
   <joint name="joint_right_wheel" type="continuous">
-    <origin rpy="0 0 0" xyz="${Factor*(-0.03)}  ${Factor*0.02}    0"/>
+    <!-- <origin rpy="0 0 0" xyz="-0.04  0.02    0"/> -->
+    <origin rpy="0 0 0" xyz="-0.03  0.02    0"/>
     <child link="link_right_wheel" />
     <parent link="link_chassis"/>
-    <axis rpy="0 0 0" xyz="${Factor*1} 0 0"/>
+    <axis rpy="0 0 0" xyz="1 0 0"/>
     <limit effort="5" velocity="6"/>
     <joint_properties damping="10000.0" friction="10000.0" />
   </joint>
@@ -145,14 +151,16 @@
     <collision name="link_left_wheel_collision">
       <origin rpy="0 1.5707 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="${Factor*0.007}" radius="${Factor*0.0175}"/>
+        <!-- <cylinder length="0.1" radius="0.02"/> -->
+        <cylinder length="0.007" radius="0.0175"/>
       </geometry>
     </collision>
 
     <visual name="link_left_wheel_visual">
       <origin rpy="0 1.5707 0" xyz="0 0 0"/>
       <geometry>
-        <cylinder length="${Factor*0.007}" radius="${Factor*0.0175}"/>
+        <!-- <cylinder length="0.01" radius="0.02"/> -->
+        <cylinder length="0.007" radius="0.0175"/>
       </geometry>
     </visual>
 
@@ -160,7 +168,8 @@
 
   <!--   Joint for right wheel  -->
   <joint name="joint_left_wheel" type="continuous">
-    <origin rpy="0 0 0" xyz="${Factor*0.028} ${Factor*0.02} 0"/>
+    <!-- <origin rpy="0 0 0" xyz="0.04 0.02 0"/> -->
+    <origin rpy="0 0 0" xyz="0.028 0.02 0"/>
     <child link="link_left_wheel" />
     <parent link="link_chassis"/>
     <axis rpy="0 0 0" xyz="1 0 0"/>
@@ -185,8 +194,8 @@
       <updateRate>20</updateRate>
       <leftJoint>joint_left_wheel</leftJoint>
       <rightJoint>joint_right_wheel</rightJoint>
-      <wheelSeparation>${Factor*0.35}</wheelSeparation>
-      <wheelDiameter>${Factor*0.17}</wheelDiameter>
+      <wheelSeparation>0.4</wheelSeparation>
+      <wheelDiameter>0.2</wheelDiameter>
       <torque>0.1</torque>
       <commandTopic>cmd_vel</commandTopic>
       <odometryTopic>odom</odometryTopic>
@@ -203,14 +212,16 @@
   <link name="sensor_laser">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="0" />
+      <!-- <mass value="0.1" /> -->
+      <mass value="0.4" />
       <inertia ixx="0.02" ixy="0" ixz="0" iyy="0.02" iyz="0" izz="0.02"/>
     </inertial>
 
     <visual>
-      <origin xyz="${Factor*0.02} 0 0" rpy="0 0 0" />
+      <origin xyz="0.02 0 0" rpy="0 0 0" />
       <geometry>
-        <cylinder radius="${Factor*0.005}" length="${Factor*0.022}"/>
+        <!-- <cylinder radius="0.005" length="0.02"/> -->
+        <cylinder radius="0.005" length="0.022"/>
       </geometry>
       <material name="white" />
     </visual>
@@ -218,13 +229,15 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="${Factor*0.005}" length="${Factor*0.022}"/>
+        <!-- <cylinder radius="0.005" length="0.001"/> -->
+        <cylinder radius="0.005" length="0.022"/>
       </geometry>
     </collision>
   </link>
 
   <joint name="joint_sensor_laser" type="fixed">
-    <origin rpy="0  0  -1.57" xyz="0    0    ${Factor*0.018}"/>
+    <!-- <origin rpy="0  0  -1.57" xyz="0    0    0.01"/> -->
+    <origin rpy="0  0  -1.57" xyz="0    0    0.018"/>
     <parent link="link_chassis"/>
     <child link="sensor_laser"/>
   </joint>
