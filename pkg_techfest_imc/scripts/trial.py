@@ -14,6 +14,7 @@ import random
 import math
 import time
 
+
 hz = 20                     # Cycle Frequency
 loop_index = 0              # Number of sampling cycles
 loop_index_outer_corner = 0  # Loop index when the outer corner is detected
@@ -21,9 +22,10 @@ loop_index_inner_corner = 0  # Loop index when the inner corner is detected
 # Limit to Laser sensor range in meters, all distances above this value are
 inf = 10
 #      considered out of sensor range
-wall_dist = 0.08            # Distance desired from the wall
-max_speed = 0.3             # Maximum speed of the robot on meters/seconds
-p = 15                      # Proportional constant for controller
+wall_dist = 0.08             # Distance desired from the wall
+max_speed = 0.4          # Maximum speed of the robot on meters/seconds
+# max_speed = 0.28          # Maximum speed of the robot on meters/seconds
+p = 25                      # Proportional constant for controller
 d = 0                       # Derivative constant for controller
 # Proportional constant for angle controller (just simple P controller)
 angle = 1
@@ -60,6 +62,7 @@ bool_outer_corner = 0
 bool_inner_corner = 0
 
 last_vel = [random.uniform(0.1, 0.3),  random.uniform(-0.3, 0.3)]
+# last_vel = [random.uniform(0.1, 0.5),  random.uniform(-0.3, 0.3)]
 wall_found = 0
 
 # Robot state machines
@@ -106,6 +109,15 @@ def clbk_laser(msg):
         'left':   min(mean(msg.ranges[720:863]), inf),
         'bleft':   min(mean(msg.ranges[864:1007]), inf),
     }
+    # regions_ = {
+    #     'bright':  min(min(msg.ranges[0:143]), inf),
+    #     'right': min(min(msg.ranges[144:287]), inf),
+    #     'fright':  min(min(msg.ranges[288:431]), inf),
+    #     'front':  min(min(msg.ranges[432:575]), inf),
+    #     'fleft':   min(min(msg.ranges[576:719]), inf),
+    #     'left':   min(min(msg.ranges[720:863]), inf),
+    #     'bleft':   min(min(msg.ranges[864:1007]), inf),
+    # }
     # rospy.loginfo(regions_)
 
     # Detection of Outer and Inner corner
